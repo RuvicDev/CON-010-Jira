@@ -55,7 +55,7 @@ client = JiraClient()  # lee RUVIC_JIRA_* del entorno automáticamente
 issue = client.create_issue(
     summary="El nodo 3 no responde",
     project="OPS",            # opcional si hay proyecto por defecto
-    issue_type="Bug",         # "Task" | "Bug" | "Story" | ...
+    issue_type="Tarea",       # usa un tipo que exista: client.list_issue_types("KAN")
     description="Detectado a las 10:32. Reinicio no soluciona.",
     priority="High",          # opcional (si el proyecto usa prioridades)
     labels=["infra", "urgente"],
@@ -64,6 +64,12 @@ print(issue["key"], issue["url"])   # OPS-123 https://.../browse/OPS-123
 ```
 
 La `description` se pasa como texto plano; la librería la convierte al formato ADF que exige Jira Cloud v3.
+
+Los nombres de tipo dependen del idioma y la plantilla del proyecto ("Tarea", "Historia", "Epic"...). Si el tipo no existe, el error lista los tipos válidos; también puedes consultarlos antes:
+
+```python
+print(client.list_issue_types("KAN"))  # ['Epic', 'Subtask', 'Tarea', 'Historia']
+```
 
 ## Capacidad 2 — Actualizar campos de un ticket
 

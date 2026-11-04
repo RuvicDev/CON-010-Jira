@@ -294,7 +294,17 @@ class JiraClient:
         if extra_fields:
             fields.update(extra_fields)
 
-        result = self._call("POST", "issue", json_body={"fields": fields})
+        try:
+            result = self._call("POST", "issue", json_body={"fields": fields})
+        except JiraDataError as exc:
+            if "issuetype" not in str(exc).lower():
+                raise
+            valid = self._issue_type_names(fields["project"]["key"])
+            hint = f" Tipos válidos en el proyecto: {', '.join(valid)}." if valid else ""
+            raise JiraDataError(
+                f"El tipo de issue '{issue_type}' no existe en el proyecto "
+                f"{fields['project']['key']}.{hint}"
+            ) from None
         key = result.get("key")
         self._logger.info("Ticket %s creado", key)
         return {
@@ -302,6 +312,27 @@ class JiraClient:
             "id": result.get("id"),
             "url": f"{self.config.base_url}/browse/{key}",
         }
+
+    def list_issue_types(self, project: str | None = None) -> list[str]:
+        """Lista los nombres de tipos de issue que se pueden crear en el proyecto.
+
+        Ejemplo:
+            >>> client.list_issue_types("KAN")
+            ['Tarea', 'Subtarea', 'Epic']
+        """
+        key = self._resolve_project(project)
+        names = self._issue_type_names(key, strict=True)
+        return names
+
+    def _issue_type_names(self, project_key: str, strict: bool = False) -> list[str]:
+        try:
+            result = self._call("GET", f"issue/createmeta/{project_key}/issuetypes")
+        except JiraDataError:
+            if strict:
+                raise
+            return []
+        values = (result or {}).get("issueTypes") or (result or {}).get("values") or []
+        return [v.get("name") for v in values if isinstance(v, dict) and v.get("name")]
 
     # ------------------------------------------------------------------ #
     # Capacidad 2: actualizar ticket
