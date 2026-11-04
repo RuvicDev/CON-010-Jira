@@ -6,6 +6,7 @@
   "description": "Gestión de tickets en Jira Cloud: crear tickets, actualizar campos, cambiar estado, comentar y buscar con JQL",
   "description_en": "Ticket management in Jira Cloud: create tickets, update fields, change status, comment and search with JQL",
   "category": "project_management",
+  "icon": "icon.svg",
   "category_en": "project_management",
   "keywords": ["jira", "atlassian", "ticket", "issue", "incidencia", "tarea", "task", "bug", "jql", "proyecto", "project", "estado", "status", "comentario", "comment"],
   "library": {
